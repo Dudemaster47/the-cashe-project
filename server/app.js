@@ -15,7 +15,7 @@ app.use(express.json());
 // STEP 1: Unmanaged Transaction
 app.get('/unmanaged', async (req, res, next) => {
     // Unmanaged transactions are first saved to a variable
-    // Your code here
+    const t = await sequelize.transaction()
     try {
         // Queries to be performed in the transaction:
         
@@ -24,11 +24,12 @@ app.get('/unmanaged', async (req, res, next) => {
             where: { 
                 firstName: 'Rose', 
                 lastName: 'Tyler' 
-            }
+            },
+            transaction: t
         });
         await rose.update({
             balance: rose.balance + 200
-        });
+        }, {transaction: t});
         await rose.save();
 
         // Find Martha's account, subtract 200 from her balance, then save
@@ -44,15 +45,17 @@ app.get('/unmanaged', async (req, res, next) => {
             transaction: t
         });
         await martha.save();
+        await t.commit();
         
 
         // After the transaction, formulate the response
         // Find all accounts, ordered by firstName, returned as a JSON response
         let allAccounts = await Account.findAll({ order: [ ['firstName', 'ASC'] ] });
         res.json(allAccounts);
+
     } catch (error) {
         // If an error occurred, the transaction must be rolled back
-        // Your code here
+        await t.rollback();
 
         // The error is then passed to the error handler
         next(error);
@@ -137,5 +140,5 @@ app.use((err, req, res, next) => {
 });
 
 // Set port and listen for incoming requests - DO NOT MODIFY
-const port = 5000;
+const port = 5004;
 app.listen(port, () => console.log('Server is listening on port', port));
