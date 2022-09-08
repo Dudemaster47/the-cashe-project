@@ -73,7 +73,7 @@ app.get('/managed', async (req, res, next) => {
         // Create a transaction with a callback function
         // If the function executes successfully, the transaction is committed
         
-        // Your code here
+        const banana = await sequelize.transaction(async {t} => {
         
         // Queries to be performed in the transaction:
 
@@ -83,10 +83,10 @@ app.get('/managed', async (req, res, next) => {
                 firstName: 'Rose',
                 lastName: 'Tyler'
             }
-        });
+        }, {transaction: t});
         await rose.update({
             balance: rose.balance + 200
-        });
+        }, {transaction: t});
         await rose.save();
 
         // Find Amy's account, subtract 200 from her balance, then save
@@ -95,16 +95,17 @@ app.get('/managed', async (req, res, next) => {
                 firstName: 'Amy',
                 lastName: 'Pond'
             }
-        });
+        }, {transaction: t});
         await amy.update({
             balance: amy.balance - 200
-        });
+        }, {transaction: t});
         await amy.save();
 
         // After the transaction, formulate the response
         // Find all accounts, ordered by firstName, returned as a JSON response
         let allAccounts = await Account.findAll({ order: [ ['firstName', 'ASC'] ] });
         res.json(allAccounts);
+    }
     } catch (error) {
         // If an error was thrown in the transaction, it will be rolled back
         // automatically
@@ -112,7 +113,7 @@ app.get('/managed', async (req, res, next) => {
         // Pass any errors that occurred to an error handler
         next(error);
      }
-});
+    });
 
 
 // Current status of all accounts - DO NOT MODIFY
