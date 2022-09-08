@@ -37,8 +37,10 @@ app.get('/unmanaged', async (req, res, next) => {
             where: { 
                 firstName: 'Martha', 
                 lastName: 'Jones' 
-            }
-        });
+             },
+        },
+        {transaction: t}
+        );
         await martha.update({
             balance: martha.balance - 200
         }, {
